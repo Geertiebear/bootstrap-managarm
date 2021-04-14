@@ -13,6 +13,7 @@ io_timeout = 30
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--io-timeout', action='store_true')
+parser.add_argument('--log-stdout', action='store_true')
 
 args = parser.parse_args()
 
@@ -77,6 +78,11 @@ def open_pipe(path, mode):
 	fd = os.open(path, access) # We do not want O_TRUNC / O_CREAT!
 	return os.fdopen(fd, mode + 'b', buffering=0)
 
+def open_logfile():
+    if args.log_stdout:
+        return sys.stdout.buffer
+    return open('test-image.log', 'wb')
+
 monitor = open_pipe('monitor.in', 'w')
 debugcon = open_pipe('debugcon', 'r')
 
@@ -90,7 +96,7 @@ debugcon_alive = True
 
 buf = b''
 sent_enter = False
-logfile = open('test-image.log', 'wb')
+logfile = open_logfile()
 success = False
 
 start_time = time.time()
