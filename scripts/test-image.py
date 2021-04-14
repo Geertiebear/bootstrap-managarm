@@ -45,12 +45,10 @@ os.mkfifo('monitor.in')
 os.mkfifo('monitor.out')
 os.mkfifo('debugcon')
 
-# Start the qemu process.
-proc = subprocess.Popen([
+process_args = [
 		'qemu-system-x86_64',
 		'-snapshot',
 		'-chardev', 'pipe,id=monitor-fifo,path=monitor',
-		'-enable-kvm',
 		'-smp', '4',
 		'-m', '1024',
 		'-device', 'piix3-usb-uhci', '-device', 'usb-kbd', '-device', 'usb-tablet',
@@ -60,7 +58,13 @@ proc = subprocess.Popen([
 		'-display', 'none',
 		'-debugcon', 'pipe:debugcon',
 		'-monitor', 'chardev:monitor-fifo'
-	],
+	]
+
+if os.access('/dev/kvm', os.R_OK):
+    process_args += '-enable-kvm'
+
+# Start the qemu process.
+proc = subprocess.Popen(process_args,
 	stdin=subprocess.DEVNULL);
 
 # Setup the main loop that waits for the process and/or I/O.
